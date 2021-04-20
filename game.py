@@ -27,6 +27,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = player_img
+        self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
@@ -96,6 +97,7 @@ bullet_img = pygame.image.load(path.join(img_dir, "laserRed16.png")).convert()
 all_sprites = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 player = Player()
+mobs = pygame.sprite.Group()
 all_sprites.add(player)
 for i in range(8):
     m = Mob()
@@ -110,11 +112,11 @@ while running:
     # Ввод процесса (события)
     for event in pygame.event.get():
     # проверка для закрытия окна
-    if event.type == pygame.QUIT:
-        running = False
-    elif event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_SPACE:
-            player.shoot()
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                player.shoot()
 
     # Обновление
     all_sprites.update()
@@ -126,7 +128,7 @@ while running:
         all_sprites.add(m)
         mobs.add(m)
     # Проверка, не ударил ли моб игрока
-    hits = pygame.sprite.spritecollide(player, mobs, False)
+    hits = pygame.sprite.spritecollide(player, mobs, False, pygame.sprite.collide_circle)
     if hits:
         running = False
 
