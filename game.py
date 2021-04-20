@@ -43,6 +43,11 @@ class Player(pygame.sprite.Sprite):
         if self.rect.left < 0:
             self.rect.left = 0
 
+    def shoot(self):
+        bullet = Bullet(self.rect.centerx, self.rect.top)
+        all_sprites.add(bullet)
+        bullets.add(bullet)
+
 # Спрайт противника
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
@@ -62,8 +67,25 @@ class Mob(pygame.sprite.Sprite):
             self.rect.x = random.randrange(WIDTH - self.rect.width)
             self.rect.y = random.randrange(-100, -40)
             self.speedy = random.randrange(1, 8)
+# Спрайт пули
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((10, 20))
+        self.image.fill(YELLOW)
+        self.rect = self.image.get_rect()
+        self.rect.bottom = y
+        self.rect.centerx = x
+        self.speedy = -10
+
+    def update(self):
+        self.rect.y += self.speedy
+        # убить, если он заходит за верхнюю часть экрана
+        if self.rect.bottom < 0:
+            self.kill()
 
 all_sprites = pygame.sprite.Group()
+bullets = pygame.sprite.Group()
 player = Player()
 all_sprites.add(player)
 for i in range(8):
@@ -78,12 +100,27 @@ while running:
     clock.tick(FPS)
     # Ввод процесса (события)
     for event in pygame.event.get():
-        # check for closing window
-        if event.type == pygame.QUIT:
-            running = False
+    # проверка для закрытия окна
+    if event.type == pygame.QUIT:
+        running = False
+    elif event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_SPACE:
+            player.shoot()
 
     # Обновление
     all_sprites.update()
+
+    # Проверка, не убил ли игрок моба
+    hits = pygame.sprite.groupcollide(mobs, bullets, True, True)
+    for hit in hits:
+        m = Mob()
+        all_sprites.add(m)
+        mobs.add(m)
+    # Проверка, не ударил ли моб игрока
+    hits = pygame.sprite.spritecollide(player, mobs, False)
+    if hits:
+        running = False
+
     # Рендеринг
     screen.fill(BLACK)
     all_sprites.draw(screen)
